@@ -39,7 +39,10 @@ export default function ImageGenerator() {
       {!imageData && (
         <div className="text-center mb-4">
           <button
-            className="btn btn-dark px-5 py-3"
+            className="btn px-5 py-3"
+            style={{
+              backgroundColor: "rgba(175, 83, 8, 0.9)",
+            }}
             onClick={generateImage}
             disabled={loading}
           >

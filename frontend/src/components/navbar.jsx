@@ -1,46 +1,104 @@
-import React from 'react';
+import React, { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 
 export default function Navbar() {
+  const [isAuthenticated, setAuthentificated] = useState(false);
+  const naviagte = useNavigate();
+
+  useEffect(() => {
+    const token = localStorage.getItem("access");
+    setAuthentificated(!!token);
+  }, []);
+  const handleLogout = () => {
+    localStorage.removeItem("access");
+    localStorage.removeItem("refresh");
+    setAuthentificated(false);
+    naviagte("/login");
+  };
   return (
-    
-<nav className="navbar navbar-expand-lg fixed-top bg-light navbar-light">
+    <nav
+      className="navbar navbar-expand-lg fixed-top bg-light navbar-light"
+      style={{
+        height: "100px",
+      }}
+    >
       <div className="container">
-        <a className="navbar-brand d-flex align-items-center gap-2" href="#">
-      <img
-        id="logo"
-        src="/images/logo_sans_text.jpg"
-        alt="Logo"
-        draggable="false"
-        height="30"
-      />
-      <div className="d-flex flex-column">
-        <span className="fw-bold">NebulAI</span>
-        <small className="text-muted" style={{ fontSize: "0.75rem" }}>Explore the infinite</small>
+        <Link className="navbar-brand d-flex align-items-center gap-2" to="/">
+          <img
+            id="logo"
+            src="/images/nebulai.png"
+            alt="Logo"
+            draggable="false"
+            height="40px"
+            width="auto"
+          />
+          <div className="d-flex flex-column">
+            <span className="fw-bold">NebulAI</span>
+            <small className="text-muted " style={{ fontSize: "0.75rem" }}>
+              Explore the infinite
+            </small>
+          </div>
+        </Link>
+
+        <button
+          className="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarSupportedContent"
+          aria-controls="navbarSupportedContent"
+          aria-expanded="false"
+          aria-label="Toggle navigation"
+        >
+          <span className="navbar-toggler-icon"></span>
+        </button>
+
+        <div
+          className="collapse navbar-collapse justify-content-end"
+          id="navbarSupportedContent"
+        >
+          <ul className="navbar-nav ms-auto">
+            <li className="nav-item">
+              <Link to="/about" className="nav-link ">
+                <i className="fas fa-bell "></i>A propos
+              </Link>
+            </li>
+            <li className="nav-item">
+              <Link to="/dashboard" className="nav-link ">
+                <i className="fas fa-bell "></i>Dashaboard
+              </Link>
+            </li>
+            {isAuthenticated ? (
+              <li className="nav-item">
+                <button
+                  onClick={handleLogout}
+                  className="btn btn-dark text-white nav-link "
+                >
+                  <i className="fas fa-bell "></i>Logout
+                </button>
+              </li>
+            ) : (
+              <>
+                <li className="nav-item">
+                  <Link
+                    to="/login"
+                    className="btn btn-dark text-white nav-link "
+                  >
+                    <i className="fas fa-bell "></i>Login
+                  </Link>
+                </li>
+                <li className="nav-item">
+                  <Link
+                    to="/login"
+                    className="btn btn-dark text-white nav-link"
+                  >
+                    <i className="fas fa-bell "></i>Register
+                  </Link>
+                </li>
+              </>
+            )}
+          </ul>
+        </div>
       </div>
-    </a>
-
-    <button className="navbar-toggler" type="button" data-mdb-collapse-init data-mdb-target="#navbarSupportedContent"
-      aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-      <i className="fas fa-bars"></i>
-    </button>
-    <div className="collapse navbar-collapse" id="navbarSupportedContent">
-      <ul className="navbar-nav ms-auto align-items-center">
-        <li className="nav-item">
-          <a className="nav-link mx-2" href="#!"><i className="fas fa-plus-circle pe-2"></i>Post</a>
-        </li>
-        <li className="nav-item">
-          <a className="nav-link mx-2" href="#!"><i className="fas fa-bell pe-2"></i>Alerts</a>
-        </li>
-        <li className="nav-item">
-          <a className="nav-link mx-2" href="#!"><i className="fas fa-heart pe-2"></i>Trips</a>
-        </li>
-        <li className="nav-item ms-3">
-          <a className="btn btn-dark btn-rounded justify-content-end" href="#!">Sign in</a>
-        </li>
-      </ul>
-    </div>
-  </div>
-</nav>
-
+    </nav>
   );
 }
