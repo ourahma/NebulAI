@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 
 export default function Navbar() {
   const [isAuthenticated, setAuthentificated] = useState(false);
   const naviagte = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     const token = localStorage.getItem("access");
@@ -15,6 +16,9 @@ export default function Navbar() {
     setAuthentificated(false);
     naviagte("/login");
   };
+
+  const isActive = (path) => (location.pathname === path ? "active" : "");
+
   return (
     <nav
       className="navbar navbar-expand-lg fixed-top bg-light navbar-light"
@@ -58,17 +62,20 @@ export default function Navbar() {
         >
           <ul className="navbar-nav ms-auto">
             <li className="nav-item">
-              <Link to="/" className="nav-link ">
+              <Link to="/" className={`nav-link ${isActive("/")}`}>
                 <i className="bi bi-house-door-fill m-1"></i>Acceuil
               </Link>
             </li>
             <li className="nav-item">
-              <Link to="/about" className="nav-link ">
+              <Link to="/about" className={`nav-link ${isActive("/about")}`}>
                 <i className="bi bi-info-circle-fill m-1"></i>A propos
               </Link>
             </li>
             <li className="nav-item">
-              <Link to="/dashboard" className="nav-link ">
+              <Link
+                to="/dashboard"
+                className={`nav-link ${isActive("/dashboard")}`}
+              >
                 <i className="bi bi-bar-chart-fill m-1"></i>Dashaboard
               </Link>
             </li>
@@ -86,15 +93,19 @@ export default function Navbar() {
                 <li className="nav-item">
                   <Link
                     to="/login"
-                    className="btn btn-dark text-white nav-link "
+                    className={`btn btn-dark text-white nav-link ${isActive(
+                      "/login"
+                    )}`}
                   >
                     <i className="bi bi-box-arrow-in-right m-1"></i>Login
                   </Link>
                 </li>
                 <li className="nav-item">
-                  <Link 
+                  <Link
                     to="/login"
-                    className="btn btn-dark text-white nav-link"
+                    className={`btn btn-dark text-white nav-link ${isActive(
+                      "/register"
+                    )}`}
                   >
                     <i className="bi bi-person-plus m-1"></i>Register
                   </Link>

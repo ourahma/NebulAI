@@ -8,7 +8,7 @@ pnpm-debug.log*
 lerna-debug.log*
 
 node_modules
-./src/assets/galaxies/*
+.src/assets/galaxies/*
 dist
 ./venv/
 dist-ssr

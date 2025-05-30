@@ -4,6 +4,7 @@ import Footer from "../components/footer";
 import "../assets/css/dashboard.css";
 import Grid from "@mui/material/Grid";
 import NavBar from "../components/navbar";
+import CountUp from "react-countup";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -71,7 +72,10 @@ const Dashboard = () => {
                 <div className="txt p-3">
                   <h3>Image générées</h3>
                   <p>Nombre total d'images générées aujourd'hui</p>
-                  <h1>{stats.total_generated}</h1>
+
+                  <h1>
+                    <CountUp end={stats.total_generated} duration={2}></CountUp>
+                  </h1>
                 </div>
 
                 <div className="ico-card m-3">
@@ -84,7 +88,9 @@ const Dashboard = () => {
                 <div className="txt p-3">
                   <h3>Nombre de likes</h3>
                   <p>Total des likes reçus</p>
-                  <h1>{stats.total_likes}</h1>
+                  <h1>
+                    <CountUp end={stats.total_likes} duration={2}></CountUp>
+                  </h1>
                 </div>
                 <div className="ico-card m-3">
                   <i className="bi bi-hand-thumbs-up fs-1 icon-hover"></i>
@@ -96,7 +102,9 @@ const Dashboard = () => {
                 <div className="txt p-3">
                   <h3>Nombre de dislikes</h3>
                   <p>Total des dislikes reçus</p>
-                  <h1>{stats.total_dislikes}</h1>
+                  <h1>
+                    <CountUp end={stats.total_dislikes} duration={2}></CountUp>
+                  </h1>
                 </div>
                 <div className="ico-card m-3">
                   <i className="bi bi-hand-thumbs-down fs-1 icon-hover"></i>
