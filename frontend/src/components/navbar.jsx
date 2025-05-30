@@ -58,13 +58,18 @@ export default function Navbar() {
         >
           <ul className="navbar-nav ms-auto">
             <li className="nav-item">
+              <Link to="/" className="nav-link ">
+                <i className="bi bi-house-door-fill m-1"></i>Acceuil
+              </Link>
+            </li>
+            <li className="nav-item">
               <Link to="/about" className="nav-link ">
-                <i className="fas fa-bell "></i>A propos
+                <i className="bi bi-info-circle-fill m-1"></i>A propos
               </Link>
             </li>
             <li className="nav-item">
               <Link to="/dashboard" className="nav-link ">
-                <i className="fas fa-bell "></i>Dashaboard
+                <i className="bi bi-bar-chart-fill m-1"></i>Dashaboard
               </Link>
             </li>
             {isAuthenticated ? (
@@ -73,7 +78,7 @@ export default function Navbar() {
                   onClick={handleLogout}
                   className="btn btn-dark text-white nav-link "
                 >
-                  <i className="fas fa-bell "></i>Logout
+                  <i className="bi bi-box-arrow-left m-1 "></i>Logout
                 </button>
               </li>
             ) : (
@@ -83,15 +88,15 @@ export default function Navbar() {
                     to="/login"
                     className="btn btn-dark text-white nav-link "
                   >
-                    <i className="fas fa-bell "></i>Login
+                    <i className="bi bi-box-arrow-in-right m-1"></i>Login
                   </Link>
                 </li>
                 <li className="nav-item">
-                  <Link
+                  <Link 
                     to="/login"
                     className="btn btn-dark text-white nav-link"
                   >
-                    <i className="fas fa-bell "></i>Register
+                    <i className="bi bi-person-plus m-1"></i>Register
                   </Link>
                 </li>
               </>

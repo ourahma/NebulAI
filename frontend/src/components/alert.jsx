@@ -23,16 +23,16 @@ export default function Alert({
   const iconClass = icons[type] || "bi-info-circle-fill";
 
   return (
-    <div className="container my-3">
+    <div className="alert-overlay">
       <div
-        className={`alert alert-${type} d-flex align-items-center justify-content-between text-white`}
+        className={`alert alert-${type} d-flex align-items-center justify-content-between text-dark`}
         role="alert"
         style={{ padding: "1rem 1.25rem" }}
       >
         <div className="d-flex align-items-center">
           <i className={`bi ${iconClass} fs-4 m-3`}></i>
           <div>
-            <h6 className="alert-heading text-capitalize mb-1">{type}</h6> 
+            <h6 className="alert-heading text-capitalize mb-1">{type}</h6>
             <p className="mt-1">{message}</p>
           </div>
         </div>

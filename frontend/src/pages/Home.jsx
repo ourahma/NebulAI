@@ -6,6 +6,7 @@ import ImageGenerator from "../components/ImageGenerator";
 import "../index.css";
 
 function Home() {
+  
   return (
     <div
       style={{

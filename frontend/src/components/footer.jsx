@@ -1,15 +1,13 @@
 export default function Footer() {
   return (
     <footer
-      className="d-flex justify-content-between align-items-center px-4 py-3"
+      className="d-flex justify-content-between align-items-center px-4 py-3 bg-light"
       style={{
-        backgroundColor: "white",
+        backgroundColor: "green",
         color: "black",
-        boxShadow: "0 -1px 5px rgba(0,0,0,0.1)",
         zIndex: 100,
-        position: "relative", // tu peux mettre "fixed" si tu veux qu’il soit toujours visible en bas
-        bottom: 0,
         width: "100%",
+        margin: 0,
       }}
     >
       {/* Left side: logo + slogan */}
@@ -23,9 +21,27 @@ export default function Footer() {
         <span>NebulAI — Explore the infinite</span>
       </div>
 
-      {/* Right side: copyright */}
+      <section className="mb-4 text-center">
+        <a
+          className="btn btn-outline-dark btn-floating m-1"
+          href="https://www.linkedin.com/in/maroua-ourahma/"
+          role="button"
+        >
+          <i className="bi bi-linkedin"></i>
+        </a>
+
+        <a
+          className="btn btn-outline-dark btn-floating m-1"
+          href="https://github.com/ourahma"
+          role="button"
+        >
+          <i className="bi bi-github"></i>
+        </a>
+      </section>
       <div>
-        <small className="text-muted">&copy; {new Date().getFullYear()} NebulAI</small>
+        <small className="text-muted">
+          &copy; {new Date().getFullYear()} NebulAI, OURAHMA Maroua.
+        </small>
       </div>
     </footer>
   );
