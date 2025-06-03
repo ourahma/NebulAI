@@ -1,0 +1,28 @@
+.cursor-dot,
+.cursor-ring {
+  position: fixed;
+  pointer-events: none;
+  z-index: 10000;
+}
+
+.cursor-dot {
+  width: 8px;
+  height: 8px;
+  background: rgb(248, 170, 2);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: background 0.2s;
+}
+
+.cursor-ring {
+  width: 30px;
+  height: 30px;
+  border: 3px solid rgba(248, 170, 2, 0.5);
+  border-radius: 50%;
+  transition: transform 0.15s ease-out, border 0.15s ease;
+}
+
+.cursor-ring.clicked {
+  transform: scale(1.5) translate(-25%, -25%);
+  border-color: rgba(0, 0, 0, 0.8);
+}

@@ -1,13 +1,9 @@
-.container-alert {
-  margin-top: 2px;
-  margin-right: 0;
-  height: 1000px;
-}
+
 .alert-overlay {
   position: fixed;
   top: 20px;
   right: 20px;
-  z-index: 1050;
+  z-index: 10050;
   max-width: 400px;
   width: auto;
 }

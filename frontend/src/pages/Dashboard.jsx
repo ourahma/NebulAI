@@ -54,7 +54,7 @@ const Dashboard = () => {
           role="status"
           style={{ width: "4rem", height: "4rem" }}
         >
-          <span className="visually-hidden">Chargement...</span>
+          <span className="visually-hidden"></span>
         </div>
         <div className="mt-3 fs-4">Chargement...</div>
       </div>
@@ -71,7 +71,7 @@ const Dashboard = () => {
               <div className="card gr-1" style={{ borderRadius: 12 }}>
                 <div className="txt p-3">
                   <h3>Image générées</h3>
-                  <p>Nombre total d'images générées aujourd'hui</p>
+                  <p>Nombre total d'images générées.</p>
 
                   <h1>
                     <CountUp end={stats.total_generated} duration={2}></CountUp>

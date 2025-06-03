@@ -19,12 +19,78 @@ from tensorflow.keras.applications.inception_v3 import InceptionV3, preprocess_i
 from sklearn.metrics.pairwise import polynomial_kernel
 from rest_framework.permissions import IsAuthenticated
 
+## login
+from rest_framework.views import APIView
+from django.contrib.auth import authenticate
+from rest_framework import status
+
+from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from rest_framework import serializers
+from django.contrib.auth import get_user_model
 
 latent_dim = 256        
 num_images = 5      
 num_classes = 2 
 
+### gérer les token 
 
+
+
+User = get_user_model()
+
+class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
+    def validate(self, attrs):
+        email = attrs.get("email")
+        password = attrs.get("password")
+
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            raise serializers.ValidationError("Email ou mot de passe invalide")
+
+        if not user.check_password(password):
+            raise serializers.ValidationError("Email ou mot de passe invalide")
+
+        # Injecter le username dans les credentials pour que JWT fonctionne
+        attrs["username"] = user.username
+        
+        return super().validate(attrs)
+    @classmethod
+    def get_token(cls, user):
+        token = super().get_token(user)
+        token["username"]=user.username
+        token["email"] = user.email
+        return token
+
+    def to_internal_value(self, data):
+        
+        return {
+            "email": data.get("email"),
+            "password": data.get("password"),
+        }
+
+class CustomTokenObtainPairView(TokenObtainPairView):
+    serializer_class = CustomTokenObtainPairSerializer
+
+
+#### login avec l email 
+# class LoginView(APIView):
+#     def post(self, request):
+#         email = request.data.get("email")
+#         password = request.data.get("password")
+#         user = authenticate(username=email, password=password)
+        
+#         if user is not None:
+#             return Response({
+#                 "success":"Connexion réussie"
+#             })
+#         return Response({
+#             "error":"Email ou mot de passe invalide."},
+#             status=status.HTTP_401_UNAUTHORIZED
+#         )
+        
+        
 #### traiter les images par batch
 def extract_features_in_batches(images, batch_size=4):
     features = []
@@ -38,18 +104,19 @@ def extract_features_in_batches(images, batch_size=4):
 
 @api_view(['POST'])
 def generate_image(request):
-    print("Received request to generate image")
+    print("Request pour générer des images ")
     # Génère l'image via la fonction dédiée
     pil_image = generer_image_from_model(request)
 
+    print("Image est généré, calcul de metriques....")
     # Convertir PIL Image en bytes pour sauvegarde Django
     img_io = io.BytesIO()
     pil_image.save(img_io, format='PNG')
     img_content = ContentFile(img_io.getvalue(), 'generated.png')
 
     # calculer le fid et le kid 
-    fid = compute_fid(inference_fn, val_ds, noise_dim=latent_dim, num_images=10)
-    kid_mean, _ = compute_kid(inference_fn, val_ds, noise_dim=latent_dim, num_images=10)
+    fid = compute_fid(inference_fn, val_ds, noise_dim=latent_dim, num_images=num_images)
+    kid_mean, _ = compute_kid(inference_fn, val_ds, noise_dim=latent_dim, num_images=num_images)
     print("======================================================================")
     print("FID",fid)
     print("KID",kid_mean)
@@ -97,7 +164,7 @@ def calculate_fid(act1, act2):
     fid = ssdiff + np.trace(sigma1 + sigma2 - 2 * covmean)  # Formule FID
     return fid
 
-def compute_fid(generator_fn,val_ds, noise_dim, num_images=10):
+def compute_fid(generator_fn,val_ds, noise_dim, num_images=num_images):
     real_images = []
     generated_images = []
     for images, labels in val_ds:
@@ -163,7 +230,7 @@ def calculate_kid(real_features, fake_features, subset_size=50, num_subsets=100)
 
 
     
-def compute_kid(generator_fn, val_ds, noise_dim, num_images=20):
+def compute_kid(generator_fn, val_ds, noise_dim, num_images=num_images):
     real_images = []
     generated_images = []
     

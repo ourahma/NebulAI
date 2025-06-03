@@ -5,9 +5,16 @@ export default function Navbar() {
   const [isAuthenticated, setAuthentificated] = useState(false);
   const naviagte = useNavigate();
   const location = useLocation();
+  const [username, setUsername] = useState(null);
 
   useEffect(() => {
     const token = localStorage.getItem("access");
+    if (token) {
+      const decoded = parseJwt(token);
+      if (decoded && decoded.username) {
+        setUsername(decoded.username);
+      }
+    }
     setAuthentificated(!!token);
   }, []);
   const handleLogout = () => {
@@ -20,13 +27,8 @@ export default function Navbar() {
   const isActive = (path) => (location.pathname === path ? "active" : "");
 
   return (
-    <nav
-      className="navbar navbar-expand-lg fixed-top bg-light navbar-light"
-      style={{
-        height: "100px",
-      }}
-    >
-      <div className="container">
+    <nav className="navbar navbar-expand-lg fixed-top bg-light navbar-light p-2 ">
+      <div className="container rounded-3">
         <Link className="navbar-brand d-flex align-items-center gap-2" to="/">
           <img
             id="logo"
@@ -81,19 +83,33 @@ export default function Navbar() {
             </li>
             {isAuthenticated ? (
               <li className="nav-item">
-                <button
-                  onClick={handleLogout}
-                  className="btn btn-dark text-white nav-link "
-                >
-                  <i className="bi bi-box-arrow-left m-1 "></i>Logout
-                </button>
+                <div className="btn-group ml-5">
+                  <span className="align-self-center">Bienvenue {username}</span>
+                  <button
+                    type="button"
+                    className="btn btn-link dropdown-toggle dropdown-toggle-split"
+                    data-bs-toggle="dropdown"
+                    aria-expanded="false"
+                  ></button>
+                  <ul className="dropdown-menu">
+                    <li>
+                      {" "}
+                      <a
+                        onClick={handleLogout}
+                        className="text-dark nav-link m-1 "
+                      >
+                        <i className="bi bi-box-arrow-left m-1 "></i>Logout
+                      </a>
+                    </li>
+                  </ul>
+                </div>
               </li>
             ) : (
               <>
                 <li className="nav-item">
                   <Link
                     to="/login"
-                    className={`btn btn-dark text-white nav-link ${isActive(
+                    className={`btn btn-dark text-white m-1 nav-link ${isActive(
                       "/login"
                     )}`}
                   >
@@ -103,7 +119,7 @@ export default function Navbar() {
                 <li className="nav-item">
                   <Link
                     to="/login"
-                    className={`btn btn-dark text-white nav-link ${isActive(
+                    className={`btn btn-dark text-white m-1 nav-link ${isActive(
                       "/register"
                     )}`}
                   >
@@ -117,4 +133,15 @@ export default function Navbar() {
       </div>
     </nav>
   );
+}
+// décoder le username pour l'affciher
+function parseJwt(token) {
+  try {
+    const base64Payload = token.split(".")[1];
+    const payload = atob(base64Payload);
+    return JSON.parse(payload);
+  } catch (e) {
+    console.log(e);
+    return null;
+  }
 }

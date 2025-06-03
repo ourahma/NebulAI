@@ -13,9 +13,9 @@ function Home() {
         display: "flex",
         flexDirection: "column",
         minHeight: "100vh",
-        minWidth: "100vh",
+        minWidth: "100%",
         position: "relative",
-        overflow: "hidden",
+        overflow: "revert",
       }}
     >
       <Navbar />

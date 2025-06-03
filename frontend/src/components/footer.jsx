@@ -1,7 +1,7 @@
 export default function Footer() {
   return (
     <footer
-      className="d-flex justify-content-between align-items-center px-4 py-3 bg-light"
+      className="d-flex justify-content-between align-items-center bg-light"
       style={{
         backgroundColor: "green",
         color: "black",
@@ -11,15 +11,29 @@ export default function Footer() {
       }}
     >
       {/* Left side: logo + slogan */}
-      <div className="d-flex align-items-center gap-3">
+      <div className="d-flex align-items-center">
         <img
           src="/images/nebulai.png"
           alt="Logo"
-          height={40}
+          height={70} // logo bigger
+          width={70}
+          className="rounded-circle"
           draggable="false"
         />
-        <span>NebulAI — Explore the infinite</span>
+        <div className="d-flex flex-column">
+          <span
+            style={{
+              fontFamily: "'Courier New', monospace",
+              fontWeight: "bold",
+              fontSize: "1.3rem",
+            }}
+          >
+            NebulAI
+          </span>
+          <span style={{ fontSize: "0.9rem" }}>Explore the infinite</span>
+        </div>
       </div>
+
 
       <section className="mb-4 text-center">
         <a

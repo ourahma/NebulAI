@@ -37,6 +37,7 @@ export default function ImageGenerator() {
       setFid(response.data.fid);
       setKid(response.data.kid);
       setImageId(response.data.id);
+      setLoading(false);
       setAlert({ type: "success", message: "Génération résussie" });
     } catch (err) {
       setAlert({ type: "danger", message: "Erreur lors de la génération" });

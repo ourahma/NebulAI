@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Alert from "../components/alert";
 export default function Login() {
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [alert, setAlert] = useState(null);
   const navigate = useNavigate();
@@ -12,7 +12,7 @@ export default function Login() {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ username, password }),
+      body: JSON.stringify({email:email, password:password }),
     });
 
     const data = await response.json();
@@ -25,6 +25,7 @@ export default function Login() {
 
       setTimeout(() => navigate("/", 1000));
     } else {
+      console.log(response);
       setAlert({ type: "danger", message: "Echec d'authentification." });
     }
   }
@@ -39,10 +40,7 @@ export default function Login() {
           onClose={() => setAlert(null)}
         />
       )}
-      <section
-        className="h-100 gradient-form"
-        style={{ backgroundColor: "#eee;" }}
-      >
+      <section className="h-100 gradient-form">
         <div className="container h-100">
           <div className="row d-flex justify-content-center align-items-center h-100">
             <div className="col-xl-10">
@@ -52,7 +50,7 @@ export default function Login() {
                     <div className="card-body  mx-md-2">
                       <div className="text-center">
                         <img
-                          src="images/nebulai.png"
+                          src="images/logo_sans_text.jpg"
                           style={{
                             width: "100px",
                             height: "100px",
@@ -64,17 +62,19 @@ export default function Login() {
                       </div>
 
                       <form onSubmit={(e) => e.preventDefault()}>
-                        <p>Veuillez saisit vos données d'authentification !</p>
+                        <p className="text-dark">
+                          Veuillez saisit vos données d'authentification.
+                        </p>
 
                         <div data-mdb-input-init className="form-outline mb-4">
                           <input
-                            type="text"
-                            id="username"
+                            type="email"
+                            id="email"
                             className="form-control"
-                            placeholder="Username"
-                            onChange={(e) => setUsername(e.target.value)}
+                            placeholder="Email"
+                            onChange={(e) => setEmail(e.target.value)}
                           />
-                          <label className="form-label" htmlFor="username">
+                          <label className="form-label" htmlFor="email">
                             Username
                           </label>
                         </div>
@@ -109,14 +109,15 @@ export default function Login() {
                           <p className="mb-0 me-2 text-dark">
                             Vous n'avez pas un compte?
                           </p>
-                          <button
+                          <Link
+                          to="/register"
                             type="button"
                             data-mdb-button-init
                             data-mdb-ripple-init
                             className="btn btn-outline-danger"
                           >
                             Créer un nouveau compte.
-                          </button>
+                          </Link>
                         </div>
                       </form>
                     </div>
