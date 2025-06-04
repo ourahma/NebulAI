@@ -9,9 +9,11 @@ export default function Navbar() {
 
   useEffect(() => {
     const token = localStorage.getItem("access");
+    setUsername(localStorage.getItem("username"));
     if (token) {
       const decoded = parseJwt(token);
       if (decoded && decoded.username) {
+        console.log(username);
         setUsername(decoded.username);
       }
     }

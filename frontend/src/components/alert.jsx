@@ -23,7 +23,7 @@ export default function Alert({
   const iconClass = icons[type] || "bi-info-circle-fill";
 
   return (
-    <div className="alert-overlay">
+    <div className="alert-overlay text-dark">
       <div
         className={`alert alert-${type} d-flex align-items-center justify-content-between text-dark`}
         role="alert"

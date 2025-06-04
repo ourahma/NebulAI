@@ -8,7 +8,7 @@ from django.http import JsonResponse
 from rest_framework.response import Response
 from rest_framework.decorators import api_view , permission_classes
 from .models import *
-from .serializers import GeneratedImageSerializer
+from .serializers import *
 import tensorflow as tf
 from .apps import model , feature_extractor, val_ds, inference_fn
 from PIL import Image
@@ -18,6 +18,7 @@ from scipy.linalg import sqrtm
 from tensorflow.keras.applications.inception_v3 import InceptionV3, preprocess_input
 from sklearn.metrics.pairwise import polynomial_kernel
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import AllowAny
 
 ## login
 from rest_framework.views import APIView
@@ -28,6 +29,8 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
+from rest_framework_simplejwt.tokens import RefreshToken
+
 
 latent_dim = 256        
 num_images = 5      
@@ -54,13 +57,21 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
 
         # Injecter le username dans les credentials pour que JWT fonctionne
         attrs["username"] = user.username
-        
-        return super().validate(attrs)
+        data = super().validate(attrs)
+        data.update({
+            "user_id":user.id,
+            "email":user.email,
+            "first_name":user.first_name,
+            "last_name": user.last_name
+        })
+        return data
     @classmethod
     def get_token(cls, user):
         token = super().get_token(user)
         token["username"]=user.username
         token["email"] = user.email
+        token["first_name"] = user.first_name
+        token["last_name"] = user.first_name
         return token
 
     def to_internal_value(self, data):
@@ -74,23 +85,25 @@ class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
 
 
-#### login avec l email 
-# class LoginView(APIView):
-#     def post(self, request):
-#         email = request.data.get("email")
-#         password = request.data.get("password")
-#         user = authenticate(username=email, password=password)
-        
-#         if user is not None:
-#             return Response({
-#                 "success":"Connexion réussie"
-#             })
-#         return Response({
-#             "error":"Email ou mot de passe invalide."},
-#             status=status.HTTP_401_UNAUTHORIZED
-#         )
-        
-        
+#### register 
+class RegisterView(APIView):
+    permission_classes = [AllowAny]
+    
+    def post(self, request):
+        serializer = RegisterSerializer(data=request.data)
+        if serializer.is_valid():
+            user = serializer.save()
+            
+            ## generer un token au utilisateur
+            refresh = RefreshToken.for_user(user)
+            return Response({
+                "message": "Compte créé avec succès",
+                "refresh": str(refresh),
+                "access": str(refresh.access_token),
+                "username":user.username,
+                "email": user.email
+            }, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 #### traiter les images par batch
 def extract_features_in_batches(images, batch_size=4):
     features = []

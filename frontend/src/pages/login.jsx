@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate , Link} from "react-router-dom";
 import Alert from "../components/alert";
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -23,7 +23,7 @@ export default function Login() {
       localStorage.setItem("refresh", data.refresh);
       setAlert({ type: "success", message: "Authentification aves réussie" });
 
-      setTimeout(() => navigate("/", 1000));
+      setTimeout(() => navigate("/", 3000));
     } else {
       console.log(response);
       setAlert({ type: "danger", message: "Echec d'authentification." });
@@ -106,7 +106,7 @@ export default function Login() {
                         </div>
 
                         <div className="d-flex align-items-center justify-content-center pb-4">
-                          <p className="mb-0 me-2 text-dark">
+                          <p className="mb-0 me-2 text-dark p-2">
                             Vous n'avez pas un compte?
                           </p>
                           <Link
