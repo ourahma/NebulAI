@@ -134,15 +134,6 @@ JWT (via SimpleJWT) is used to:
 
 ---
 
-
-## Future Improvements
-
-* Add galaxy video generation
-* Implement image rating/voting system
-* Include evaluation metrics: FID, KID
-
----
-
 ## Authors
 
 * OURAHMA Maroua
