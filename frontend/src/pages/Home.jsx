@@ -8,16 +8,7 @@ import "../index.css";
 function Home() {
   
   return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        minHeight: "100vh",
-        minWidth: "100%",
-        position: "relative",
-        overflow: "revert",
-      }}
-    >
+    <div>
       <Navbar />
 
       {/* Background fixé derrière tout */}
@@ -40,18 +31,9 @@ function Home() {
       ></div>
 
       
-      <main
-        style={{
-          flex: 1,
-          zIndex: 10,
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-        }}
-      >
+      <main className="z-20 position-relative justify-content-center align-items-center p-5">
         <ImageGenerator />
       </main>
-      <p>test</p>
     </div>
   );
 }

@@ -3,6 +3,7 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 
 export default function Navbar() {
   const [isAuthenticated, setAuthentificated] = useState(false);
+  const [admin, setAmdin] = useState(false);
   const naviagte = useNavigate();
   const location = useLocation();
   const [username, setUsername] = useState(null);
@@ -15,6 +16,7 @@ export default function Navbar() {
       if (decoded && decoded.username) {
         console.log(username);
         setUsername(decoded.username);
+        setAmdin(decoded.admin==true);
       }
     }
     setAuthentificated(!!token);
@@ -75,7 +77,8 @@ export default function Navbar() {
                 <i className="bi bi-info-circle-fill m-1"></i>A propos
               </Link>
             </li>
-            <li className="nav-item">
+            {isAuthenticated && admin && (
+              <li className="nav-item">
               <Link
                 to="/dashboard"
                 className={`nav-link ${isActive("/dashboard")}`}
@@ -83,6 +86,8 @@ export default function Navbar() {
                 <i className="bi bi-bar-chart-fill m-1"></i>Dashaboard
               </Link>
             </li>
+            )}
+            
             {isAuthenticated ? (
               <li className="nav-item">
                 <div className="btn-group ml-5">

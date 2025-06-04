@@ -1,8 +1,10 @@
 import { useEffect } from "react";
+import PropTypes from "prop-types";
+import "../assets/css/alert.css"; // Assure-toi d'importer ton CSS ici
 
 export default function Alert({
-  type = "success",
-  message = "Message de test",
+  type = "info",
+  message,
   duration = 3000,
   onClose,
 }) {
@@ -13,39 +15,35 @@ export default function Alert({
     return () => clearTimeout(timer);
   }, [duration, onClose]);
 
-  const icons = {
-    success: "bi-check-circle-fill",
-    danger: "bi-exclamation-triangle-fill",
-    warning: "bi-exclamation-circle-fill",
-    info: "bi-info-circle-fill",
+  const typeConfig = {
+    danger: { icon: "bi bi-ban-fill", title: "Erreur" },
+    warning: { icon: "bi bi-exclamation-diamond-fill", title: "Attention" },
+    info: { icon: "bi bi-info-circle-fill", title: "Informations" },
+    success: { icon: "bi bi-check-circle-fill", title: "Succès" },
   };
 
-  const iconClass = icons[type] || "bi-info-circle-fill";
+  const { icon, title } = typeConfig[type] || typeConfig["info"];
 
   return (
-    <div className="alert-overlay text-dark">
-      <div
-        className={`alert alert-${type} d-flex align-items-center justify-content-between text-dark`}
-        role="alert"
-        style={{ padding: "1rem 1.25rem" }}
-      >
-        <div className="d-flex align-items-center">
-          <i className={`bi ${iconClass} fs-4 m-3`}></i>
-          <div>
-            <h6 className="alert-heading text-capitalize mb-1">{type}</h6>
-            <p className="mt-1">{message}</p>
-          </div>
-        </div>
-
-        <button
-          type="button"
-          className="btn btn-sm text-white"
-          onClick={onClose}
-          style={{ background: "transparent", border: "none" }}
-        >
-          <i className="bi bi-x-circle fs-5"></i>
-        </button>
+    <div className={`alert alert-${type}`} id="alert">
+      <div className="icon__wrapper">
+        <i className={icon}></i>
       </div>
+      <p>
+        {title} <br />
+        {message}
+      </p>
+      
+      <span onClick={onClose}>
+        <i className="bi bi-x"></i>
+      </span>
     </div>
   );
 }
+
+Alert.propTypes = {
+  type: PropTypes.oneOf(["error", "warning", "info", "success"]),
+  message: PropTypes.string.isRequired,
+  duration: PropTypes.number,
+  onClose: PropTypes.func,
+};

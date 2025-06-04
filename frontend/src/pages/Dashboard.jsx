@@ -65,8 +65,8 @@ const Dashboard = () => {
     <div className="page-container">
       <div className="content-wrap">
         <NavBar />
-        <div className="container-dashboard">
-          <Grid container spacing={3}>
+        <div className="container-dashboard ">
+          <Grid container spacing={3} className="mt-3 align-items-center justify-content-center">
             <Grid xs={12} sm={12} md={12}>
               <div className="card gr-1" style={{ borderRadius: 12 }}>
                 <div className="txt p-3">
@@ -112,27 +112,7 @@ const Dashboard = () => {
               </div>
             </Grid>
           </Grid>
-
-          <Grid container spacing={3} className="mt-3">
-            <Grid item xs={12}>
-              <Card
-                style={{
-                  boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
-                  borderRadius: "12px",
-                  background: "white",
-                }}
-              >
-                <CardContent className="chart-card-content p-6">
-                  <h3>Historique des générations</h3>
-                  <Bar
-                    className="chart-container"
-                    data={stats.generation_history}
-                  />
-                </CardContent>
-              </Card>
-            </Grid>
-          </Grid>
-          <Grid container spacing={3} className="mt-3">
+          <Grid container spacing={3} className="mt-3 align-items-center justify-content-center">
             <Grid item xs={12}>
               <Card
                 style={{
@@ -142,7 +122,24 @@ const Dashboard = () => {
                 }}
               >
                 <CardContent className="chart-card-content">
-                  <h3>Répartition Like / Dislike</h3>
+                  <h5>Historique des générations</h5>
+                  <Bar
+                    className="chart-container"
+                    data={stats.generation_history}
+                  />
+                </CardContent>
+              </Card>
+            </Grid>
+            <Grid item xs={12}>
+              <Card
+                style={{
+                  boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
+                  borderRadius: "12px",
+                  background: "white",
+                }}
+              >
+                <CardContent className="chart-card-content">
+                  <h5>Répartition Like / Dislike</h5>
                   <Pie
                     className="chart-container"
                     data={stats.like_dislike_pie}

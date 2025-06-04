@@ -62,7 +62,8 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
             "user_id":user.id,
             "email":user.email,
             "first_name":user.first_name,
-            "last_name": user.last_name
+            "last_name": user.last_name,
+            "admin" :user.is_superuser
         })
         return data
     @classmethod
@@ -72,6 +73,7 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         token["email"] = user.email
         token["first_name"] = user.first_name
         token["last_name"] = user.first_name
+        token["admin"] = user.is_superuser
         return token
 
     def to_internal_value(self, data):
@@ -116,6 +118,7 @@ def extract_features_in_batches(images, batch_size=4):
 
 
 @api_view(['POST'])
+@permission_classes([AllowAny]) 
 def generate_image(request):
     print("Request pour générer des images ")
     # Génère l'image via la fonction dédiée
@@ -297,6 +300,7 @@ def vote_image(request, image_id):
     return Response({'likes': likes, 'dislikes': dislikes})
 
 ### retourner les statistiques de dashboard 
+@permission_classes([IsAuthenticated])
 def dashboard_stats(request):
     data = {
         "total_generated": GeneratedImage.objects.count(),

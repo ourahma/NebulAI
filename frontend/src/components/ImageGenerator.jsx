@@ -5,7 +5,7 @@ import Alert from "./alert";
 export default function ImageGenerator() {
   const [loading, setLoading] = useState(false);
   const [imageData, setImageData] = useState(null);
-  const [error, setError] = useState(null);
+
   const [likes, setLikes] = useState(0);
   const [fid, setFid] = useState(0);
   const [kid, setKid] = useState(0);
@@ -15,20 +15,17 @@ export default function ImageGenerator() {
   const [userVote, setUserVote] = useState(null); // 'like', 'dislike' ou null
   const [voting, setVoting] = useState(false);
 
-
   const generateImage = async () => {
+    const token = localStorage.getItem("access");
+    const headers = token ? { Authorization: `Bearer ${token}` } : {};
     setLoading(true);
-    setError(null);
     setImageData(null);
+    setUserVote(null);
     try {
       const response = await axios.post(
         "http://localhost:8000/api/generate-image/",
         {},
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("access")}`,
-          },
-        }
+        { headers }
       );
 
       setImageData(`http://localhost:8000${response.data.image_url}`);
@@ -40,7 +37,14 @@ export default function ImageGenerator() {
       setLoading(false);
       setAlert({ type: "success", message: "Génération résussie" });
     } catch (err) {
-      setAlert({ type: "danger", message: "Erreur lors de la génération" });
+      const message =
+        err.response?.data?.message ||
+        "Une erreur est survenue lors de la génération.";
+      setAlert({
+        type: "danger",
+        message: message,
+      });
+      setLoading(false);
       console.error(err);
     }
     setVoting(false);
@@ -48,13 +52,22 @@ export default function ImageGenerator() {
 
   // voter sur des images
   const voteImage = async (type) => {
+    const token = localStorage.getItem("access");
+    if (!token) {
+      setAlert({
+        type: "warning",
+        message: "Vous devez être connecté pour voter.",
+      });
+      return;
+    }
+
     try {
       const response = await axios.post(
         `http://localhost:8000/api/vote-image/${imageId}/`,
         { vote_type: type },
         {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("access")}`,
+            Authorization: `Bearer ${token}`,
           },
         }
       );
@@ -79,14 +92,14 @@ export default function ImageGenerator() {
           type={alert.type}
           message={alert.message}
           duration={3000}
-          onClose={() => setAlert(null)}
+          onClose={() => setAlert(false)}
         />
       )}
       <div className="container mt-4">
         {!imageData && (
-          <div className="text-center mb-4">
+          <div className="text-center ">
             <button
-              className="btn px-5 py-3"
+              className="btn px-5 py-3 justify-content-center align-items-center mt-5"
               style={{
                 backgroundColor: "rgba(175, 83, 8, 0.9)",
               }}
@@ -108,8 +121,6 @@ export default function ImageGenerator() {
             </button>
           </div>
         )}
-
-        {error && <div className="alert alert-danger text-center">{error}</div>}
 
         {imageData && (
           <div
@@ -236,7 +247,14 @@ export default function ImageGenerator() {
                 {
                   icon: "arrow-down-circle-fill",
                   href: imageData,
-                  download: "generated_image.png",
+                  action: () => {
+                    const link = document.createElement("a");
+                    link.href = imageData;
+                    link.download = `image_${Date.now()}.png`;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                  },
                   title: "Download",
                 },
                 {
