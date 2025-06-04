@@ -98,7 +98,9 @@ The model pipeline includes:
 ---
 ## Video Demo
 
-![video](screenshots/cgan.webm)
+
+[cgan (1).webm](https://github.com/user-attachments/assets/eac40c76-03df-4a91-a601-cc41e12d6b88)
+
 ---
 
 ##  Installation (Development)
