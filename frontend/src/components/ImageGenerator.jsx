@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 import Alert from "./alert";
-
+import "../assets/css/buttons.css";
 export default function ImageGenerator() {
   const [loading, setLoading] = useState(false);
   const [imageData, setImageData] = useState(null);
@@ -9,33 +9,35 @@ export default function ImageGenerator() {
   const [likes, setLikes] = useState(0);
   const [fid, setFid] = useState(0);
   const [kid, setKid] = useState(0);
-  const [imageId, setImageId] = useState(null);
+  const [Id, setImageId] = useState(null);
+  const [loadingMetrics, setLoadingMetrics] = useState(false);
   const [dislikes, setDislikes] = useState(0);
   const [alert, setAlert] = useState(null);
   const [userVote, setUserVote] = useState(null); // 'like', 'dislike' ou null
   const [voting, setVoting] = useState(false);
 
   const generateImage = async () => {
-    const token = localStorage.getItem("access");
-    const headers = token ? { Authorization: `Bearer ${token}` } : {};
     setLoading(true);
     setImageData(null);
     setUserVote(null);
     try {
       const response = await axios.post(
         "http://localhost:8000/api/generate-image/",
-        {},
-        { headers }
+        {}
       );
-
+      const Id = response.data.id;
       setImageData(`http://localhost:8000${response.data.image_url}`);
       setLikes(0);
       setDislikes(0);
-      setFid(response.data.fid);
-      setKid(response.data.kid);
+      setLoading(true);
       setImageId(response.data.id);
       setLoading(false);
-      setAlert({ type: "success", message: "Génération résussie" });
+      setAlert({
+        type: "success",
+        message:
+          "Génération résussie! Veuillez attendez pour le calcul des métriques.",
+      });
+      waitForMetrics(Id);
     } catch (err) {
       const message =
         err.response?.data?.message ||
@@ -49,6 +51,30 @@ export default function ImageGenerator() {
     }
     setVoting(false);
   };
+  // fatcher les métrique après generation d'image
+  const waitForMetrics = (id) => {
+    setLoadingMetrics(true);
+    const interval = setInterval(async () => {
+      try {
+        const response = await axios.get(
+          `http://localhost:8000/api/metrics/${id}/`
+        );
+        const { fid, kid } = response.data;
+        if (fid != null && kid != null) {
+          setFid(fid);
+          setKid(kid);
+          setLoadingMetrics(false);
+          setAlert({
+            type: "success",
+            message: "Métriques récupérées avec succès !",
+          });
+          clearInterval(interval);
+        }
+      } catch (e) {
+        console.error("Erreur lors du fetch des métriques :", e);
+      }
+    }, 3000); // Vérifie toutes les 3 secondes
+  };
 
   // voter sur des images
   const voteImage = async (type) => {
@@ -59,22 +85,27 @@ export default function ImageGenerator() {
         message: "Vous devez être connecté pour voter.",
       });
       return;
-    }
-
-    try {
-      const response = await axios.post(
-        `http://localhost:8000/api/vote-image/${imageId}/`,
-        { vote_type: type },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      setLikes(response.data.likes);
-      setDislikes(response.data.dislikes);
-    } catch (error) {
-      console.error("Erreur de vote :", error);
+    } else {
+      try {
+        const response = await axios.post(
+          `http://localhost:8000/api/vote-image/${Id}/`,
+          { vote_type: type },
+          {
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        setLikes(response.data.likes);
+        setDislikes(response.data.dislikes);
+      } catch (error) {
+        setAlert({
+          type: "danger",
+          message: "Erreur lors du vote. Veuillez réessayer.",
+        });
+        console.error("Erreur de vote :", error);
+      }
     }
   };
 
@@ -99,10 +130,7 @@ export default function ImageGenerator() {
         {!imageData && (
           <div className="text-center ">
             <button
-              className="btn px-5 py-3 justify-content-center align-items-center mt-5"
-              style={{
-                backgroundColor: "rgba(175, 83, 8, 0.9)",
-              }}
+              className="btn px-5 py-3 justify-content-center align-items-center mt-5 lancer_generate"
               onClick={generateImage}
               disabled={loading}
             >
@@ -130,31 +158,7 @@ export default function ImageGenerator() {
             <button
               onClick={handleClose}
               aria-label="Fermer"
-              style={{
-                position: "absolute",
-                top: 10,
-                right: 10,
-                backgroundColor: "transparent",
-                border: "none",
-                color: "rgba(0,0,0,0.6)",
-                fontSize: 24,
-                cursor: "pointer",
-                fontWeight: "bold",
-                lineHeight: 1,
-                padding: 0,
-                width: 32,
-                height: 32,
-                borderRadius: "50%",
-                transition: "color 0.3s ease",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.color = "rgba(0,0,0,0.9)";
-                e.currentTarget.style.backgroundColor = "rgba(0,0,0,0.1)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.color = "rgba(0,0,0,0.6)";
-                e.currentTarget.style.backgroundColor = "transparent";
-              }}
+              className="close-btn"
             >
               <i className="bi bi-x-lg"></i>
             </button>
@@ -174,43 +178,25 @@ export default function ImageGenerator() {
               style={{ flex: "0 0 180px", gap: "15px" }}
             >
               {[
-                { label: "FID", value: fid.toFixed(2), bg: "#ffe0b2" },
-                { label: "KID", value: kid.toFixed(2), bg: "#d1f5d3" },
-              ].map(({ label, value, bg }, index) => (
+                {
+                  label: "FID",
+                  value: loadingMetrics ? "Calcul ..." : fid.toFixed(4),
+                },
+                {
+                  label: "KID",
+                  value: loadingMetrics ? "Calcul ..." : kid.toFixed(4),
+                },
+              ].map(({ label, value }, index) => (
                 <div
                   key={index}
-                  className="position-relative rounded shadow-sm p-3"
-                  style={{
-                    backgroundColor: bg,
-                    minHeight: "90px",
-                    display: "flex",
-                    flexDirection: "column",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    overflow: "hidden",
-                  }}
+                  className="metrcis-btn position-relative rounded shadow-sm z-index-2 font-weight-bold flex text-light justify-content-center overflowHidden align-item-center p-3"
                 >
-                  <div
-                    style={{
-                      zIndex: 2,
-                      fontSize: "1rem",
-                      fontWeight: "600",
-                      color: "#444",
-                      textTransform: "uppercase",
-                    }}
-                  >
+                  <div>
                     {label}
                   </div>
 
                   {/* Valeur */}
-                  <div
-                    style={{
-                      zIndex: 2,
-                      fontSize: "14px",
-                      fontWeight: "bold",
-                      color: "#111",
-                    }}
-                  >
+                  <div className="z-index-2 font-weight-bold">
                     {value}
                   </div>
                 </div>
@@ -247,14 +233,7 @@ export default function ImageGenerator() {
                 {
                   icon: "arrow-down-circle-fill",
                   href: imageData,
-                  action: () => {
-                    const link = document.createElement("a");
-                    link.href = imageData;
-                    link.download = `image_${Date.now()}.png`;
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
-                  },
+                  action: () => {},
                   title: "Download",
                 },
                 {
@@ -269,36 +248,10 @@ export default function ImageGenerator() {
                     // Bouton téléchargement en <a>
                     <a
                       key={i}
-                      href={href}
+                      href={`http://localhost:8000/api/download/${Id}`}
                       download={download}
                       title={title}
-                      className="btn btn-transparent mb-3 d-flex justify-content-center align-items-center"
-                      style={{
-                        width: 60,
-                        height: 60,
-                        borderRadius: "50%",
-                        backgroundColor: "transparent",
-                        border: "2px solid rgba(255,255,255,0.3)",
-                        cursor: "pointer",
-                        color: "rgba(255,255,255,0.8)",
-                        fontSize: 28,
-                        transition: "all 0.3s ease",
-                        position: "relative",
-                        textDecoration: "none",
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.backgroundColor =
-                          "rgba(255,255,255,0.15)";
-                        e.currentTarget.style.color = "rgba(255,255,255,1)";
-                        e.currentTarget.style.borderColor =
-                          "rgba(255,255,255,0.8)";
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.backgroundColor = "transparent";
-                        e.currentTarget.style.color = "rgba(255,255,255,0.8)";
-                        e.currentTarget.style.borderColor =
-                          "rgba(255,255,255,0.3)";
-                      }}
+                      className="custom-btn btn btn-transparent mb-3 d-flex justify-content-center align-items-center"
                     >
                       <i className={`bi bi-${icon}`}></i>
                     </a>
@@ -309,45 +262,11 @@ export default function ImageGenerator() {
                       onClick={action}
                       disabled={disabled}
                       title={title}
-                      className="btn btn-transparent mb-3 d-flex justify-content-center align-items-center"
-                      style={{
-                        width: 60,
-                        height: 60,
-                        borderRadius: "50%",
-                        backgroundColor: "transparent",
-                        border: "2px solid rgba(255,255,255,0.3)",
-                        cursor: disabled ? "not-allowed" : "pointer",
-                        color: "rgba(255,255,255,0.8)",
-                        fontSize: 28,
-                        transition: "all 0.3s ease",
-                        position: "relative",
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.backgroundColor =
-                          "rgba(255,255,255,0.15)";
-                        e.currentTarget.style.color = "rgba(255,255,255,1)";
-                        e.currentTarget.style.borderColor =
-                          "rgba(255,255,255,0.8)";
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.backgroundColor = "transparent";
-                        e.currentTarget.style.color = "rgba(255,255,255,0.8)";
-                        e.currentTarget.style.borderColor =
-                          "rgba(255,255,255,0.3)";
-                      }}
+                      className="custom-btn btn btn-transparent mb-3 d-flex justify-content-center align-items-center"
                     >
                       <i className={`bi bi-${icon}`}></i>
                       {typeof count === "number" && (
-                        <span
-                          style={{
-                            position: "absolute",
-                            bottom: 4,
-                            right: 8,
-                            fontSize: 14,
-                            color: "rgba(255,255,255,0.85)",
-                            fontWeight: "bold",
-                            userSelect: "none",
-                          }}
+                        <span className="badge position-abslute bg-transparent bottom-4 right-0 small text-light"
                         >
                           {count}
                         </span>
@@ -357,11 +276,6 @@ export default function ImageGenerator() {
                           className="spinner-border spinner-border-sm"
                           role="status"
                           aria-hidden="true"
-                          style={{
-                            position: "absolute",
-                            top: "calc(50% - 0.5rem)",
-                            left: "calc(50% - 0.5rem)",
-                          }}
                         ></span>
                       )}
                     </button>

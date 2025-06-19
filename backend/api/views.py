@@ -19,19 +19,19 @@ from tensorflow.keras.applications.inception_v3 import InceptionV3, preprocess_i
 from sklearn.metrics.pairwise import polynomial_kernel
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.permissions import AllowAny
-
+from django.http import FileResponse, Http404
 ## login
 from rest_framework.views import APIView
 from django.contrib.auth import authenticate
 from rest_framework import status
-
+import threading
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from rest_framework_simplejwt.tokens import RefreshToken
-
-
+import threading
+import time
 latent_dim = 256        
 num_images = 5      
 num_classes = 2 
@@ -117,12 +117,60 @@ def extract_features_in_batches(images, batch_size=4):
     return tf.concat(features, axis=0)
 
 
+
+def async_metric_task(image_id, label):
+    from .models import GeneratedImage
+    instance = GeneratedImage.objects.get(id=image_id)
+    fid = compute_fid(inference_fn, val_ds, noise_dim=latent_dim, label_target = label,num_images=num_images)
+    kid_mean, _ = compute_kid(inference_fn, val_ds, noise_dim=latent_dim, label_target = label,num_images=num_images)
+    
+    print("======================================================================")
+    print("FID",fid)
+    print("KID",kid_mean)
+    
+    instance.fid = fid
+    instance.kid = kid_mean
+    instance.save()
+    
+## retiurner les métrique après calcul :
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def get_metrics(request, image_id):
+    """
+    Attend que FID et KID soient calculés, puis les renvoie.
+    """
+    timeout = 15  # secondes max d'attente
+    waited = 0
+    interval = 1  # fréquence de vérification
+
+    while waited < timeout:
+        try:
+            image = GeneratedImage.objects.get(id=image_id)
+        except GeneratedImage.DoesNotExist:
+            return Response({"error": "Image non trouvée"}, status=404)
+
+        if image.fid is not None and image.kid is not None:
+            return Response({
+                "fid": image.fid,
+                "kid": image.kid
+            })
+
+        time.sleep(interval)
+        waited += interval
+
+    # Si le timeout est atteint
+    return Response({
+        "fid": None,
+        "kid": None,
+        "message": "Les métriques ne sont pas encore prêtes"
+    }, status=202)
+    
 @api_view(['POST'])
-@permission_classes([AllowAny]) 
+@permission_classes([AllowAny])
 def generate_image(request):
-    print("Request pour générer des images ")
+   
     # Génère l'image via la fonction dédiée
-    pil_image = generer_image_from_model(request)
+    pil_image,label = generer_image_from_model(request)
 
     print("Image est généré, calcul de metriques....")
     # Convertir PIL Image en bytes pour sauvegarde Django
@@ -131,17 +179,17 @@ def generate_image(request):
     img_content = ContentFile(img_io.getvalue(), 'generated.png')
 
     # calculer le fid et le kid 
-    fid = compute_fid(inference_fn, val_ds, noise_dim=latent_dim, num_images=num_images)
-    kid_mean, _ = compute_kid(inference_fn, val_ds, noise_dim=latent_dim, num_images=num_images)
-    print("======================================================================")
-    print("FID",fid)
-    print("KID",kid_mean)
+    #fid = compute_fid(inference_fn, val_ds, noise_dim=latent_dim, label_target = label,num_images=num_images)
+    #kid_mean, _ = compute_kid(inference_fn, val_ds, noise_dim=latent_dim, label_target = label,num_images=num_images)
+    
     # Créer instance GeneratedImage avec image sauvegardée
     image_instance = GeneratedImage()
     image_instance.image_url.save(f'generated_{random.randint(1000,9999)}.png', img_content)
-    image_instance.fid = fid
-    image_instance.kid = kid_mean
     image_instance.save()
+    ## lancer le calcul de fid et kid dans un thread
+    thread = threading.Thread(target=async_metric_task, args=(image_instance.id, label))
+    thread.start()
+
     serializer = GeneratedImageSerializer(image_instance)
     return Response(serializer.data)
 
@@ -151,6 +199,7 @@ def generer_image_from_model(request):
     noise += epsilon
 
     label = 1 if random.random() >= 0.5 else 0
+  
     labels = tf.constant([[label]], dtype=tf.int32)
 
     generator_fn = model.signatures["serving_default"]
@@ -161,7 +210,7 @@ def generer_image_from_model(request):
     # Convertir en image PIL (assumant 3 canaux RGB)
     pil_image = Image.fromarray(img_array)
 
-    return pil_image
+    return pil_image, label
 
 
 #### evaluer et retourner les métriques FID et KID
@@ -180,12 +229,15 @@ def calculate_fid(act1, act2):
     fid = ssdiff + np.trace(sigma1 + sigma2 - 2 * covmean)  # Formule FID
     return fid
 
-def compute_fid(generator_fn,val_ds, noise_dim, num_images=num_images):
+def compute_fid(generator_fn,val_ds, noise_dim, label_target,num_images=num_images):
     real_images = []
     generated_images = []
     for images, labels in val_ds:
         for img, label in zip(images, labels):
-            label_int = int(label.numpy()[0]) # [[0]] vers 0
+            label_int = int(label.numpy()) 
+
+            if label_int != label_target:
+                continue
             real_images.append(img)
             # Génère une image conditionnée
             noise = tf.random.normal([1, noise_dim])
@@ -246,13 +298,16 @@ def calculate_kid(real_features, fake_features, subset_size=50, num_subsets=100)
 
 
     
-def compute_kid(generator_fn, val_ds, noise_dim, num_images=num_images):
+def compute_kid(generator_fn, val_ds, noise_dim, label_target,num_images=num_images):
     real_images = []
     generated_images = []
     
     for images, labels in val_ds:
         for img, label in zip(images, labels):
-            label_int = int(label.numpy()[0])
+            label_int = int(label.numpy())
+            
+            if label_int != label_target:
+                continue
             real_images.append(img)
             noise = tf.random.normal([1, noise_dim])
             label_input = tf.convert_to_tensor([[label_int]])
@@ -275,9 +330,7 @@ def compute_kid(generator_fn, val_ds, noise_dim, num_images=num_images):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def vote_image(request, image_id):
-    print("vote image is triggered ")
     user = request.user
-    print(f"User =========== {user}")
     vote_type = request.data.get('vote_type') 
     user = request.user
 
@@ -302,11 +355,34 @@ def vote_image(request, image_id):
 ### retourner les statistiques de dashboard 
 @permission_classes([IsAuthenticated])
 def dashboard_stats(request):
+    images = GeneratedImage.objects.all()
+    #for i in images:
+        #print("Id", i.id, "Fid",i.fid,"Kid",i.kid)
     data = {
         "total_generated": GeneratedImage.objects.count(),
         "total_likes": GeneratedImage.total_likes(),
         "total_dislikes": GeneratedImage.total_dislikes(),
         "generation_history": GeneratedImage.generation_history_chart(),
         "like_dislike_pie": GeneratedImage.like_dislike_pie_chart(),
+        "fid_history": GeneratedImage.get_fids(),
+        "kid_history": GeneratedImage.get_kids(),
     }
     return JsonResponse(data)
+
+def download_image(request, image_id):
+    
+    try:
+        image = GeneratedImage.objects.get(id=image_id)
+    except GeneratedImage.DoesNotExist:
+        raise Http404("Image non trouvée")
+
+    image_path = os.path.join(settings.MEDIA_ROOT, image.image_url.name)
+    if not os.path.exists(image_path):
+        raise Http404("Image non trouvée")
+
+    # Nom du fichier pour le téléchargement, récupéré depuis le nom du fichier stocké
+    image_name = os.path.basename(image.image_url.name)
+
+    response = FileResponse(open(image_path, 'rb'), content_type='application/octet-stream')
+    response['Content-Disposition'] = f'attachment; filename="{image_name}"'
+    return response

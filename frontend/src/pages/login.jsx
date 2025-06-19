@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate , Link} from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import Alert from "../components/alert";
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -12,7 +12,7 @@ export default function Login() {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({email:email, password:password }),
+      body: JSON.stringify({ email: email, password: password }),
     });
 
     const data = await response.json();
@@ -68,6 +68,8 @@ export default function Login() {
 
                         <div data-mdb-input-init className="form-outline mb-4">
                           <input
+                            autoComplete="off"
+                            autoCorrect="off"
                             type="email"
                             id="email"
                             className="form-control"
@@ -75,12 +77,14 @@ export default function Login() {
                             onChange={(e) => setEmail(e.target.value)}
                           />
                           <label className="form-label" htmlFor="email">
-                            Username
+                            Email
                           </label>
                         </div>
 
                         <div data-mdb-input-init className="form-outline mb-4">
                           <input
+                            autoComplete="off"
+                            autoCorrect="off"
                             type="password"
                             name="password"
                             id="password"
@@ -110,7 +114,7 @@ export default function Login() {
                             Vous n'avez pas un compte?
                           </p>
                           <Link
-                          to="/register"
+                            to="/register"
                             type="button"
                             data-mdb-button-init
                             data-mdb-ripple-init

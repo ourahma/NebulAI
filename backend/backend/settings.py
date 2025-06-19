@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
 from datetime import timedelta
+from corsheaders.defaults import default_headers
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = "django-insecure-@z1h6y1j38t0ed6k-hl4n$u2585kch44dcr%9@(xpb(z*lab7k"
@@ -119,6 +120,12 @@ REST_FRAMEWORK = {
     ),
 }
 
+
+
+CORS_ALLOW_HEADERS = list(default_headers) + [
+    'authorization',
+]
+CORS_ALLOW_ALL_ORIGINS = True
 ## configuer la durée de vie de token
 
 SIMPLE_JWT = {

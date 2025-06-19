@@ -1,0 +1,82 @@
+/* Bouton circulaire personnalisé */
+.custom-btn {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  background-color: transparent;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 28px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-decoration: none;
+  outline: none;
+}
+.close-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background-color: transparent;
+  border: none;
+  color: rgba(0, 0, 0, 0.6);
+  font-size: 24px;
+  cursor: pointer;
+  font-weight: bold;
+  line-height: 1;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  transition: color 0.3s ease, background-color 0.3s ease;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.close-btn:hover,
+.close-btn:focus {
+  color: rgba(0, 0, 0, 0.9);
+  background-color: rgba(0, 0, 0, 0.1);
+  outline: none;
+}
+.metrcis-btn , .lancer_generate{
+  background-color: rgba(175, 83, 8, 0.9);
+  
+}
+/* Hover avec effet de mouvement */
+.custom-btn:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+  color: rgba(255, 255, 255, 1);
+  border-color: rgba(255, 255, 255, 0.8);
+  transform: scale(1.1);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+/* Désactivé */
+.custom-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+/* Nombre en bas à droite */
+.custom-btn .counter {
+  position: absolute;
+  bottom: 4px;
+  right: 8px;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.85);
+  font-weight: bold;
+  user-select: none;
+}
+
+/* Spinner centré */
+.custom-btn .spinner-border {
+  position: absolute;
+  top: calc(50% - 0.5rem);
+  left: calc(50% - 0.5rem);
+}

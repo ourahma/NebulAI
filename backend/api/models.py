@@ -1,11 +1,13 @@
 from django.db import models
 from django.core.exceptions import *
+from datetime import datetime, timedelta
 from django.contrib.auth.models import User
 from django.db.models.functions import TruncDate
 from django.db.models import Count
-
+from django.utils.timezone import now
 class GeneratedImage(models.Model):
     image_url = models.ImageField(upload_to='generated_images/')
+    label = models.IntegerField(null=True, blank=True)  
     fid = models.FloatField(null=True, blank=True)
     kid = models.FloatField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -83,6 +85,53 @@ class GeneratedImage(models.Model):
                 {
                     "data": [likes, dislikes],
                     "backgroundColor": ["#36A2EB", "#FF6384"]
+                }
+            ]
+        }
+    @staticmethod
+    def get_fids():
+
+        data = (
+            GeneratedImage.objects
+            .annotate(date=TruncDate('created_at'))
+            .order_by('created_at')[20:]
+        )[::-1]
+        
+        labels = [img.created_at.strftime("%H:%M") for img in data]
+        tooltip_labels = [img.created_at.strftime("%Y-%m-%d %H:%M:%S") for img in data] 
+        kids = [img.kid for img in data]
+        
+        return {
+            "labels": labels,
+            "tooltips": tooltip_labels,
+            "datasets": [
+                {
+                    "label": "L'historique des FID",
+                    "data": kids,
+                    "backgroundColor": "rgba(75, 2, 192, 0.6)"
+                }
+            ]
+        }
+    @staticmethod
+    def get_kids():
+        data = (
+            GeneratedImage.objects
+            .annotate(date=TruncDate('created_at'))
+            .order_by('created_at')[20:]
+        )[::-1]
+        
+        labels = [img.created_at.strftime("%H:%M") for img in data]
+        tooltip_labels = [img.created_at.strftime("%Y-%m-%d %H:%M:%S") for img in data] 
+        fids = [img.kid for img in data]
+        
+        return {
+            "labels": labels,
+            "tooltips": tooltip_labels,
+            "datasets": [
+                {
+                    "label": "L'historique des KID",
+                    "data": fids,
+                    "backgroundColor": "rgba(75, 192, 192, 0.6)"
                 }
             ]
         }

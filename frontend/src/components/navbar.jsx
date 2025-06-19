@@ -14,7 +14,6 @@ export default function Navbar() {
     if (token) {
       const decoded = parseJwt(token);
       if (decoded && decoded.username) {
-        console.log(username);
         setUsername(decoded.username);
         setAmdin(decoded.admin==true);
       }
